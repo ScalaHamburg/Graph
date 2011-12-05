@@ -1,0 +1,18 @@
+GRAPH
+=====
+
+Dies ist eine Sammlung von Lösungen für 
+Graphen-Suchalgorithmen am Beispiel einer 
+Shortest-Path-Suche.
+
+Hier noch der Link, für alle die eine Auffrischung in Shortest Path
+Algorithms brauchen:
+http://www.catonmat.net/blog/mit-introduction-to-algorithms-part-twelve/
+
+Start:
+> sbt run    (work's like magic!)
+
+TODO
+----
+- weitere Lösungen einfügen
+- Testabdeckung erhöhen  :-))
