@@ -12,10 +12,7 @@ class CycleDetector(g: Graph[Int, DiEdge]) {
     var cycles = List[List[Int]]()
     for (node <- g.nodes) {
       if (!visitedNodes.contains(node.value)) {
-        val path = List(node.value)
-        //	  	(newcycles,newVisitedNodes)=
-        val result = deepthFirstFrom(path, visitedNodes)
-        result match {
+        deepthFirstFrom(List(node.value), visitedNodes) match {
           case (cyc, vNodes) => cycles = cycles ++ cyc; visitedNodes = visitedNodes ++ vNodes
           case _ =>
         }
@@ -26,32 +23,31 @@ class CycleDetector(g: Graph[Int, DiEdge]) {
 
   def deepthFirstFrom(path: List[Int], visitedNodes: Set[Int]): (List[List[Int]], Set[Int]) = {
     val start = path.first
-
-    //    println("dff: " + path)
     val successors = g.find(start).get.diSuccessors
     var cycles = List[List[Int]]();
+
     if (successors.isEmpty) {
       return (cycles, visitedNodes)
     }
 
+    var newVisitedNodes = visitedNodes
     successors.foreach { n =>
-
       val value: Int = n.value
+      newVisitedNodes = newVisitedNodes + value
       if (!visitedNodes.contains(value)) {
         if (path.contains(n.value)) {
           // loop detected
           cycles = path :: cycles
-          println("loop: " + cycles)
         } else {
           val newPath = n.value :: path
-          val (c, newAll) = deepthFirstFrom(newPath, visitedNodes + value)
+          val (c, newAll) = deepthFirstFrom(newPath, newVisitedNodes)
           if (!c.isEmpty) {
             cycles = cycles ++ c
           }
         }
       }
     }
-    (cycles, visitedNodes)
+    (cycles, newVisitedNodes)
   }
 
 }
@@ -64,8 +60,6 @@ object CycleDetector {
     val cd = new CycleDetector(gWithCycle)
 
     println(cd.findCycles())
-
-    //    n.forEach(println)
 
   }
 }
