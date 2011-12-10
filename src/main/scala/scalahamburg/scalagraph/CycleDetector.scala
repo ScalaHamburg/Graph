@@ -5,11 +5,13 @@ import scalax.collection.GraphPredef._
 import scalax.collection.Graph
 import scala.collection.Set
 
+// TODO Path benutzen
+// TODO Cycles "croppen"
 class CycleDetector(g: Graph[Int, DiEdge]) {
 
-  def findCycles(): List[List[Int]] = {
+  def findCycles(): Set[List[Int]] = {
     var visitedNodes = Set[Int]()
-    var cycles = List[List[Int]]()
+    var cycles = Set[List[Int]]()
     for (node <- g.nodes) {
       if (!visitedNodes.contains(node.value)) {
         deepthFirstFrom(List(node.value), visitedNodes) match {
@@ -21,10 +23,10 @@ class CycleDetector(g: Graph[Int, DiEdge]) {
     cycles
   }
 
-  def deepthFirstFrom(path: List[Int], visitedNodes: Set[Int]): (List[List[Int]], Set[Int]) = {
+  def deepthFirstFrom(path: List[Int], visitedNodes: Set[Int]): (Set[List[Int]], Set[Int]) = {
     val start = path.first
     val successors = g.find(start).get.diSuccessors
-    var cycles = List[List[Int]]();
+    var cycles = Set[List[Int]]();
 
     if (successors.isEmpty) {
       return (cycles, visitedNodes)
@@ -34,10 +36,10 @@ class CycleDetector(g: Graph[Int, DiEdge]) {
     successors.foreach { n =>
       val value: Int = n.value
       newVisitedNodes = newVisitedNodes + value
-      if (!visitedNodes.contains(value)) {
-        if (path.contains(n.value)) {
+        if (path.contains(value)) {
           // loop detected
-          cycles = path :: cycles
+          // crop
+          cycles = cycles + path.take(path.indexOf(value)+1).sort(_<_)
         } else {
           val newPath = n.value :: path
           val (c, newAll) = deepthFirstFrom(newPath, newVisitedNodes)
@@ -45,7 +47,6 @@ class CycleDetector(g: Graph[Int, DiEdge]) {
             cycles = cycles ++ c
           }
         }
-      }
     }
     (cycles, newVisitedNodes)
   }
@@ -60,6 +61,10 @@ object CycleDetector {
     val cd = new CycleDetector(gWithCycle)
 
     println(cd.findCycles())
+
+    val gWithMoreCycles = Graph(1 ~> 2) + (2 ~> 3) + (3 ~> 4) + (4 ~> 5) + (5 ~> 6) + (6 ~> 7) + (7 ~> 8) + (8 ~> 9) + (8 ~> 10) + (10 ~> 11) + (11 ~> 12) + (12 ~> 5) + (12 ~> 10)    
+    val cd2 = new CycleDetector(gWithMoreCycles)
+    println(cd2.findCycles())
 
   }
 }
