@@ -36,10 +36,13 @@ class CycleDetector(g: Graph[Int, DiEdge]) {
     successors.foreach { n =>
       val value: Int = n.value
       newVisitedNodes = newVisitedNodes + value
-        if (path.contains(value)) {
-          // loop detected
-          // crop
-          cycles = cycles + path.take(path.indexOf(value)+1).sort(_<_)
+        if (path.contains(value)) { // loop detected
+          // take only nodes in the Cycle
+          val cropped = path.take(path.indexOf(value)+1).sort(_<_)
+          val firstInCycle = g.get(cropped.first)
+          val nextInCycle = firstInCycle.diSuccessors.filter(n=>cropped.contains(n.value))
+          val cPath = nextInCycle.first.shortestPathTo(firstInCycle).get.nodes
+          cycles = cycles + cPath.map(_.value)
         } else {
           val newPath = n.value :: path
           val (c, newAll) = deepthFirstFrom(newPath, newVisitedNodes)
