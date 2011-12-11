@@ -14,10 +14,9 @@ class CycleDetector[N](g: Graph[N, DiEdge], comparator:(N,N)=>Boolean) {
     var cycles = Set[List[N]]()
     for (node <- g.nodes) {
       if (!visitedNodes.contains(node.value)) {
-        deepthFirstFrom(List(node.value), visitedNodes) match {
-          case (cyc, vNodes) => cycles = cycles ++ cyc; visitedNodes = visitedNodes ++ vNodes
-          case _             =>
-        }
+        val(newCyc, newVnodes) = deepthFirstFrom(List(node.value), visitedNodes)
+         cycles = cycles ++ newCyc
+         visitedNodes = visitedNodes ++ newVnodes
       }
     }
     cycles
@@ -27,12 +26,8 @@ class CycleDetector[N](g: Graph[N, DiEdge], comparator:(N,N)=>Boolean) {
     val start = path.first
     val successors = g.find(start).get.diSuccessors
     var cycles = Set[List[N]]();
-
-    if (successors.isEmpty) {
-      return (cycles, visitedNodes)
-    }
-
     var newVisitedNodes = visitedNodes
+
     successors.foreach { n =>
       val value: N = n.value
       newVisitedNodes = newVisitedNodes + value
@@ -41,8 +36,8 @@ class CycleDetector[N](g: Graph[N, DiEdge], comparator:(N,N)=>Boolean) {
         val cropped = path.take(path.indexOf(value) + 1).sort(comparator)
         val firstInCycle = g.get(cropped.first)
         val nextInCycle = firstInCycle.diSuccessors.filter(n => cropped.contains(n.value))
-        val cPath = nextInCycle.first.shortestPathTo(firstInCycle).get.nodes
-        cycles = cycles + cPath.map(_.value)
+        val cyclePath = nextInCycle.first.shortestPathTo(firstInCycle).get.nodes
+        cycles = cycles + cyclePath.map(_.value)
       } else {
         val newPath = n.value :: path
         val (c, newAll) = deepthFirstFrom(newPath, newVisitedNodes)
